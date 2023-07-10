@@ -124,9 +124,9 @@ public class DatabaseUtils<V, K> {
 
     public V saveAndExpire(V value) {
         try {
+            var id = ReflectionUtils.getIdFieldValue(value);
             var saveValue = this.save(value);
-
-            var id = ReflectionUtils.getIdFieldValue(saveValue);
+            
             if (ObjectUtils.isEmpty(id))
                 return null;
 
