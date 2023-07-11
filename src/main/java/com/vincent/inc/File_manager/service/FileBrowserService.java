@@ -14,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.vincent.inc.File_manager.model.FileBrowserLoginBody;
 import com.vincent.inc.File_manager.model.FileBrowserToken;
 import com.vincent.inc.File_manager.util.DatabaseUtils;
+import com.vincent.inc.File_manager.util.Time;
 
 @Service
 public class FileBrowserService {
@@ -42,7 +43,7 @@ public class FileBrowserService {
 
     public FileBrowserService(DatabaseUtils<FileBrowserToken, Integer> databaseUtils) {
         this.tokenDatabaseUtils = databaseUtils.init(null, TOKEN_HASH_KEY);
-        this.tokenDatabaseUtils.setTTL(150); // 2.5 mins
+        this.tokenDatabaseUtils.setTTL(new Time(0, 0, 0, 0, 5, 0)); // 5 mins
     }
     
     public List<String> getAllFileName() {

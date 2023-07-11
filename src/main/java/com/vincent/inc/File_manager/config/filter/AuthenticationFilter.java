@@ -34,8 +34,8 @@ public class AuthenticationFilter implements GatewayFilter {
             int userId = this.getUserId(request);
 
             if(requestMethod.equals("GET")) {
+                
                 path = String.format("%s/%s%s", FileBrowserService.DOWNLOAD_PATH, userId, path);
-
             }
             else if(requestMethod.equals("POST")) {
                 path = String.format("%s/%s%s", FileBrowserService.UPLOAD_PATH, userId, path);
@@ -68,4 +68,6 @@ public class AuthenticationFilter implements GatewayFilter {
 
         return userId;
     }
+
+
 }
