@@ -2,33 +2,93 @@ package com.vincent.inc.File_manager.config;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.Duration;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.reactive.config.WebFluxConfigurer;
+import org.springframework.web.reactive.config.WebFluxConfigurerComposite;
+// import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import com.google.gson.Gson;
 
 @Configuration
 public class BeanConfig {
-    
+
+    @Bean
+    public CorsWebFilter corsWebFilter() {
+
+        final CorsConfiguration corsConfig = new CorsConfiguration();
+        corsConfig.setAllowedOrigins(Collections.singletonList("*"));
+        corsConfig.setMaxAge(3600L);
+        corsConfig.setAllowedMethods(Arrays.asList("*"));
+        corsConfig.addAllowedHeader("*");
+
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfig);
+
+        return new CorsWebFilter(source);
+    }
+
+    @Bean
+    public WebFluxConfigurer corsConfigurer() {
+        return new WebFluxConfigurerComposite() {
+
+            @Override
+            public void addCorsMappings(org.springframework.web.reactive.config.CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedHeaders("*")
+                        .allowedOrigins("*")
+                        .allowedMethods("*");
+            }
+        };
+    }
+
+    // @Bean
+    // public WebMvcConfigurer CORSConfigurer() {
+    // return new WebMvcConfigurer() {
+    // @Override
+    // public void
+    // addCorsMappings(org.springframework.web.servlet.config.annotation.CorsRegistry
+    // registry) {
+    // registry.addMapping("/**")
+    // .allowedOrigins("*")
+    // .allowedHeaders("*")
+    // .allowedMethods("*");
+    // }
+    // };
+    // }
+
+    @Bean
+    public HttpMessageConverters messageConverter(ObjectProvider<HttpMessageConverter<?>> converter) {
+        return new HttpMessageConverters(converter.orderedStream().collect(Collectors.toList()));
+    }
+
     @Bean
     public Gson gson() {
         return new Gson();
     }
 
     @Bean
-    public static RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder,
-            @Value("${http.connection-timeout.ms}") int connectTimeout) {
-        RestTemplate restTemplate = restTemplateBuilder
-                .setConnectTimeout(Duration.ofMillis(connectTimeout))
-                .setReadTimeout(Duration.ofMillis(connectTimeout))
-                .build();
+    public static RestTemplate restTemplate() {
+        // RestTemplate restTemplate = restTemplateBuilder
+        // .setConnectTimeout(Duration.ofMillis(connectTimeout))
+        // .setReadTimeout(Duration.ofMillis(connectTimeout))
+        // .build();
+
+        RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(new RestTemplateErrorHandler());
         return restTemplate;
     }
@@ -49,6 +109,8 @@ public class BeanConfig {
             for (int length; (length = inputStream.read(buffer)) != -1;) {
                 result.write(buffer, 0, length);
             }
+
+            System.out.println(result.toString(StandardCharsets.UTF_8));
         }
     }
 }

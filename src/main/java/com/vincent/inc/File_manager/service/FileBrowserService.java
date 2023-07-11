@@ -15,8 +15,11 @@ import com.vincent.inc.File_manager.util.DatabaseUtils;
 
 @Service
 public class FileBrowserService {
-    public static final String HASH_KEY = "com.vincent.inc.File_manager.service.FileBrowserService";
+    public static final String TOKEN_HASH_KEY = "com.vincent.inc.File_manager.service.FileBrowserService";
     public static final String LOGIN_PATH = "/api/login";
+    public static final String RESOURCES_PATH = "/api/resources";
+    public static final String UPLOAD_PATH = "/api/resources";
+    public static final String DOWNLOAD_PATH = "/api/raw";
 
     @Value("${file_browser.uri}")
     private String FileBrowserUri;
@@ -30,21 +33,22 @@ public class FileBrowserService {
     @Value("${file_browser.password}")
     private String FileBrowserPassword;
 
-    private DatabaseUtils<FileBrowserToken, Integer> databaseUtils;
+    private DatabaseUtils<FileBrowserToken, Integer> tokenDatabaseUtils;
 
     @Autowired
     private RestTemplate restTemplate;
 
     public FileBrowserService(DatabaseUtils<FileBrowserToken, Integer> databaseUtils) {
-        this.databaseUtils = databaseUtils.init(null, HASH_KEY);
+        this.tokenDatabaseUtils = databaseUtils.init(null, TOKEN_HASH_KEY);
+        this.tokenDatabaseUtils.setTTL(150); // 2.5 mins
     }
 
     public FileBrowserToken getToken() {
-        FileBrowserToken token = this.databaseUtils.get(0);
+        FileBrowserToken token = this.tokenDatabaseUtils.get(0);
 
         if(ObjectUtils.isEmpty(token)) {
             token = this.login();
-            this.databaseUtils.saveAndExpire(0, token);
+            this.tokenDatabaseUtils.saveAndExpire(0, token);
         }
         
         return token;
@@ -53,7 +57,7 @@ public class FileBrowserService {
     public FileBrowserToken refreshToken() {
         FileBrowserToken token = login();
 
-        this.databaseUtils.saveAndExpire(0, token);
+        this.tokenDatabaseUtils.saveAndExpire(0, token);
         
         return token;
     }
@@ -68,5 +72,9 @@ public class FileBrowserService {
             return new FileBrowserToken(String.format("%s%s", "auth=", response), response);
 
         return null;
+    }
+
+    public String getFileBrowserUrl() {
+        return String.format("%s:%s", this.FileBrowserUri, this.FileBrowserPort);
     }
 }

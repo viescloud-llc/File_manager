@@ -4,10 +4,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
+
+import com.vincent.inc.File_manager.model.FileBrowserEndpoint;
 
 @SpringBootApplication
 @EnableDiscoveryClient
@@ -21,9 +21,14 @@ public class FileManagerApplication {
 		SpringApplication.run(FileManagerApplication.class, args);
 	}
 
-	@GetMapping("/")
-	public ModelAndView redirectSwagger(ModelMap model) {
-		return new ModelAndView("redirect:/swagger-ui/index.html", model);
+	// @GetMapping("/")
+	// public ModelAndView redirectSwagger(ModelMap model) {
+	// 	return new ModelAndView("redirect:/swagger-ui/index.html", model);
+	// }
+
+	@GetMapping("/file_browser")
+	public FileBrowserEndpoint endPoint() {
+		return new FileBrowserEndpoint();
 	}
 
 	@GetMapping("/_status/healthz")
