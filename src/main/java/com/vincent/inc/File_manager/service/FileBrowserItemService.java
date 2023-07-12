@@ -19,7 +19,8 @@ public class FileBrowserItemService {
 
     private FileBrowserItemDao fileBrowserItemDao;
 
-    public FileBrowserItemService(DatabaseUtils<FileBrowserItem, Integer> databaseUtils, FileBrowserItemDao fileBrowserItemDao) {
+    public FileBrowserItemService(DatabaseUtils<FileBrowserItem, Integer> databaseUtils,
+            FileBrowserItemDao fileBrowserItemDao) {
         this.databaseUtils = databaseUtils.init(fileBrowserItemDao, HASH_KEY);
         this.fileBrowserItemDao = fileBrowserItemDao;
     }

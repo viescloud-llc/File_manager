@@ -48,7 +48,8 @@ class FileBrowserItemController {
     }
 
     @GetMapping("match_all")
-    public ResponseEntity<List<FileBrowserItem>> matchAll(@QueryParam("fileBrowserItem") FileBrowserItem fileBrowserItem) {
+    public ResponseEntity<List<FileBrowserItem>> matchAll(
+            @QueryParam("fileBrowserItem") FileBrowserItem fileBrowserItem) {
         List<FileBrowserItem> fileBrowserItems = this.fileBrowserItemService.getAllByMatchAll(fileBrowserItem);
 
         if (fileBrowserItems.isEmpty())
@@ -58,7 +59,8 @@ class FileBrowserItemController {
     }
 
     @GetMapping("match_any")
-    public ResponseEntity<List<FileBrowserItem>> matchAny(@QueryParam("fileBrowserItem") FileBrowserItem fileBrowserItem) {
+    public ResponseEntity<List<FileBrowserItem>> matchAny(
+            @QueryParam("fileBrowserItem") FileBrowserItem fileBrowserItem) {
         List<FileBrowserItem> fileBrowserItems = this.fileBrowserItemService.getAllByMatchAny(fileBrowserItem);
 
         if (fileBrowserItems.isEmpty())
@@ -68,9 +70,11 @@ class FileBrowserItemController {
     }
 
     @GetMapping("match_all/{matchCase}")
-    public ResponseEntity<List<FileBrowserItem>> matchAll(@QueryParam("fileBrowserItem") FileBrowserItem fileBrowserItem,
+    public ResponseEntity<List<FileBrowserItem>> matchAll(
+            @QueryParam("fileBrowserItem") FileBrowserItem fileBrowserItem,
             @PathVariable("matchCase") String matchCase) {
-        List<FileBrowserItem> fileBrowserItems = this.fileBrowserItemService.getAllByMatchAll(fileBrowserItem, matchCase);
+        List<FileBrowserItem> fileBrowserItems = this.fileBrowserItemService.getAllByMatchAll(fileBrowserItem,
+                matchCase);
 
         if (fileBrowserItems.isEmpty())
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -79,9 +83,11 @@ class FileBrowserItemController {
     }
 
     @GetMapping("match_any/{matchCase}")
-    public ResponseEntity<List<FileBrowserItem>> matchAny(@QueryParam("fileBrowserItem") FileBrowserItem fileBrowserItem,
+    public ResponseEntity<List<FileBrowserItem>> matchAny(
+            @QueryParam("fileBrowserItem") FileBrowserItem fileBrowserItem,
             @PathVariable("matchCase") String matchCase) {
-        List<FileBrowserItem> fileBrowserItems = this.fileBrowserItemService.getAllByMatchAny(fileBrowserItem, matchCase);
+        List<FileBrowserItem> fileBrowserItems = this.fileBrowserItemService.getAllByMatchAny(fileBrowserItem,
+                matchCase);
 
         if (fileBrowserItems.isEmpty())
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -99,14 +105,16 @@ class FileBrowserItemController {
 
     @PutMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<FileBrowserItem> update(@PathVariable("id") int id, @RequestBody FileBrowserItem fileBrowserItem) {
+    public ResponseEntity<FileBrowserItem> update(@PathVariable("id") int id,
+            @RequestBody FileBrowserItem fileBrowserItem) {
         fileBrowserItem = this.fileBrowserItemService.modifyFileBrowserItem(id, fileBrowserItem);
         return new ResponseEntity<>(fileBrowserItem, HttpStatus.OK);
     }
 
     @PatchMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<FileBrowserItem> patch(@PathVariable("id") int id, @RequestBody FileBrowserItem fileBrowserItem) {
+    public ResponseEntity<FileBrowserItem> patch(@PathVariable("id") int id,
+            @RequestBody FileBrowserItem fileBrowserItem) {
         fileBrowserItem = this.fileBrowserItemService.patchFileBrowserItem(id, fileBrowserItem);
         return new ResponseEntity<>(fileBrowserItem, HttpStatus.OK);
     }

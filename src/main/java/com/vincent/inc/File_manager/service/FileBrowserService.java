@@ -56,15 +56,15 @@ public class FileBrowserService {
         this.tokenDatabaseUtils = tokenDatabaseUtils.init(null, TOKEN_HASH_KEY);
         this.tokenDatabaseUtils.setTTL(new Time(0, 0, 0, 0, 5, 0)); // 5 mins
     }
-    
+
     public List<FileBrowserItem> getAllItem() {
         return fileBrowserItemService.getAll();
     }
 
     public List<FileBrowserItem> getAllItem(int userId) {
-        return fileBrowserItemService.getAll().parallelStream().filter((e) -> e.getSharedUsers().contains(userId)).collect(Collectors.toList());
+        return fileBrowserItemService.getAll().parallelStream().filter((e) -> e.getSharedUsers().contains(userId))
+                .collect(Collectors.toList());
     }
-
 
     public FileBrowserItem getItem(String path) {
         String paths[] = path.split("/");
@@ -74,23 +74,23 @@ public class FileBrowserService {
     }
 
     public FileBrowserItem getItem(FileBrowserItem item) {
-        if(ObjectUtils.isEmpty(item.getName()) || ObjectUtils.isEmpty(item.getPath()))
+        if (ObjectUtils.isEmpty(item.getName()) || ObjectUtils.isEmpty(item.getPath()))
             return null;
-            
+
         var anyMatchItemList = this.fileBrowserItemService.getAllByMatchAny(item, ReflectionUtils.CASE_SENSITIVE);
         AtomicReference<FileBrowserItem> findItem = new AtomicReference<FileBrowserItem>(null);
         anyMatchItemList.parallelStream().forEach(e -> {
-            if(e.getPath().equals(item.getPath()) && e.getName().equals(item.getName()))
+            if (e.getPath().equals(item.getPath()) && e.getName().equals(item.getName()))
                 findItem.set(e);
         });
 
         var foundItem = findItem.get();
 
-        if(!ObjectUtils.isEmpty(foundItem))
+        if (!ObjectUtils.isEmpty(foundItem))
             return foundItem;
 
         var fetchItem = this.fetchItem(item.getPath());
-        if(!ObjectUtils.isEmpty(fetchItem)) {
+        if (!ObjectUtils.isEmpty(fetchItem)) {
             this.fileBrowserItemService.createFileBrowserItem(fetchItem);
             return fetchItem;
         }
@@ -111,10 +111,10 @@ public class FileBrowserService {
     public FileBrowserItem fetchItem(String path) {
         String url = String.format("%s%s/%s", this.getFileBrowserUrl(), RESOURCES_PATH, path);
         UriComponents uri = UriComponentsBuilder.fromHttpUrl(url)
-                                                .queryParam("auth", this.getToken().getXAuth())
-                                                .encode()
-                                                .build();
-        
+                .queryParam("auth", this.getToken().getXAuth())
+                .encode()
+                .build();
+
         var response = this.restTemplate.getForObject(uri.toUri(), FileBrowserItem.class);
         return response;
     }
@@ -122,11 +122,11 @@ public class FileBrowserService {
     public FileBrowserToken getToken() {
         FileBrowserToken token = this.tokenDatabaseUtils.get(0);
 
-        if(ObjectUtils.isEmpty(token)) {
+        if (ObjectUtils.isEmpty(token)) {
             token = this.login();
             this.tokenDatabaseUtils.saveAndExpire(0, token);
         }
-        
+
         return token;
     }
 
@@ -134,20 +134,22 @@ public class FileBrowserService {
         FileBrowserToken token = login();
 
         this.tokenDatabaseUtils.saveAndExpire(0, token);
-        
+
         return token;
     }
 
     public FileBrowserToken login() {
         String url = String.format("%s:%s%s", this.FileBrowserUri, this.FileBrowserPort, LOGIN_PATH);
         UriComponents uri = UriComponentsBuilder.fromHttpUrl(url).encode().build();
-        HttpEntity<FileBrowserLoginBody> request = new HttpEntity<>(new FileBrowserLoginBody(this.FileBrowserUsername, this.FileBrowserPassword, ""));
+        HttpEntity<FileBrowserLoginBody> request = new HttpEntity<>(
+                new FileBrowserLoginBody(this.FileBrowserUsername, this.FileBrowserPassword, ""));
         var response = this.restTemplate.postForObject(uri.toUri(), request, String.class);
 
-        if(!ObjectUtils.isEmpty(response)) 
+        if (!ObjectUtils.isEmpty(response))
             return new FileBrowserToken(String.format("%s%s", "auth=", response), response);
 
-        return (FileBrowserToken) HttpResponseThrowers.throwServerError("Server file storage is having technical difficulty");
+        return (FileBrowserToken) HttpResponseThrowers
+                .throwServerError("Server file storage is having technical difficulty");
     }
 
     public String getFileBrowserUrl() {
