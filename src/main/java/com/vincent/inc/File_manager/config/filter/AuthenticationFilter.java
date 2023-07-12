@@ -8,7 +8,6 @@ import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -48,37 +47,47 @@ public class AuthenticationFilter implements GatewayFilter {
         String requestMethod = request.getMethod().name().toUpperCase();
         String path = getModifiedAuthPath(request);
 
-        if (requestMethod.equals("GET")) {
-
-            if(!this.fileBrowserService.isItemExist(path))
-                HttpResponseThrowers.throwBadRequest("Item does not exist");
-
-            path = String.format("%s%s", FileBrowserService.DOWNLOAD_PATH, path);
-        } 
-        else if (requestMethod.equals("POST")) {
-            overrideItem(path);
-            path = String.format("%s%s", FileBrowserService.UPLOAD_PATH, path);
-        } 
-        else
-            HttpResponseThrowers.throwForbidden("Not Allow");
+        switch (requestMethod) {
+            case "GET":
+                if (!this.fileBrowserService.isItemExist(path))
+                    HttpResponseThrowers.throwBadRequest("Item does not exist");
+                path = String.format("%s%s", FileBrowserService.DOWNLOAD_PATH, path);
+                break;
+            case "POST":
+                if (this.fileBrowserService.isItemExist(path))
+                    HttpResponseThrowers.throwBadRequest("Item with name and path already exist");
+                path = String.format("%s%s", FileBrowserService.UPLOAD_PATH, path);
+                break;
+            case "PUT":
+                if (!this.fileBrowserService.isItemExist(path))
+                    HttpResponseThrowers.throwBadRequest("Item does not exist");
+                path = String.format("%s%s", FileBrowserService.UPLOAD_PATH, path);
+                break;
+            default:
+                HttpResponseThrowers.throwForbidden("Not Allow");
+                break;
+        }
 
         return request.mutate().path(path).build();
     }
 
-    private void overrideItem(String path) {
-        var item = this.fileBrowserService.getItem(path);
-        if(!ObjectUtils.isEmpty(item))
-            this.fileBrowserService.getFileBrowserItemService().deleteFileBrowserItem(item.getId());
-    }
-
-    public static int getUserId(ServerHttpRequest request) {
+    public static int tryGetUserId(ServerHttpRequest request) {
         List<String> headers = request.getHeaders().getOrEmpty("user_id");
 
         if (headers.isEmpty())
-            return (int) HttpResponseThrowers.throwUnauthorized("user not login");
+            return -1;
 
         String id = headers.get(0);
         int userId = Integer.parseInt(id);
+
+        return userId;
+    }
+
+    public static int getUserId(ServerHttpRequest request) {
+        int userId = tryGetUserId(request);
+
+        if (userId < 0)
+            return (int) HttpResponseThrowers.throwUnauthorized("user not login");
 
         return userId;
     }

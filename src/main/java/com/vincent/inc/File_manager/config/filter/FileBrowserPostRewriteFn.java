@@ -30,19 +30,28 @@ public class FileBrowserPostRewriteFn implements RewriteFunction<String, String>
         String requestMethod = request.getMethod().name().toUpperCase();
         var status = response.getStatusCode();
 
-        if (requestMethod.equals("POST") && status.is2xxSuccessful()) {
+        if ((requestMethod.equals("POST") || requestMethod.equals("PUT")) && status.is2xxSuccessful()) {
             int userId = AuthenticationFilter.getUserId(request);
             String path = String.format("/%s%s", userId, request.getPath().subPath(2).value());
-            var newItem = this.fileBrowserService.getItem(path);
-
-            if(ObjectUtils.isEmpty(newItem))
+            var dbItem = this.fileBrowserService.getItem(path);
+            
+            if(ObjectUtils.isEmpty(dbItem))
                 HttpResponseThrowers.throwServerError("Server file service is having technical difficulty");
 
-            if(!newItem.getSharedUsers().contains(userId))
-                newItem.getSharedUsers().add(userId);
-            newItem = fileBrowserService.getFileBrowserItemService().patchFileBrowserItem(newItem.getId(), newItem);
-            var newItemJson = this.gson.toJson(newItem);
-            response.setRawStatusCode(201);
+            if(!dbItem.getSharedUsers().contains(userId)) {
+                dbItem.getSharedUsers().add(userId);
+                dbItem = fileBrowserService.getFileBrowserItemService().patchFileBrowserItem(dbItem.getId(), dbItem);
+            }
+
+            if(requestMethod.equals("PUT")) {
+                var fetchItem = this.fileBrowserService.fetchItem(path);
+                fetchItem.getSharedUsers().addAll(dbItem.getSharedUsers());
+                fetchItem.setPublic(dbItem.isPublic());
+                dbItem = fileBrowserService.getFileBrowserItemService().patchFileBrowserItem(dbItem.getId(), fetchItem);
+            }
+
+            var newItemJson = this.gson.toJson(dbItem);
+            response.setRawStatusCode(requestMethod.equals("POST") ? 201 : 200);
             response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
             return Mono.just(newItemJson);
         }

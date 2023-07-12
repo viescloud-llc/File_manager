@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import com.vincent.inc.File_manager.config.filter.AuthenticationFilter;
 import com.vincent.inc.File_manager.config.filter.FileBrowserFilter;
 import com.vincent.inc.File_manager.config.filter.FileBrowserPostRewriteFn;
+import com.vincent.inc.File_manager.config.filter.FileBrowserPublicAuthFilter;
 import com.vincent.inc.File_manager.service.FileBrowserService;
 
 @Configuration
@@ -26,6 +27,9 @@ public class GatewayConfig
 
     @Autowired
     private FileBrowserService fileBrowserService;
+
+    @Autowired
+    private FileBrowserPublicAuthFilter fileBrowserPublicAuthFilter;
 
     @Autowired
     private FileBrowserPostRewriteFn fileBrowserPostRewriteFn;
@@ -51,7 +55,7 @@ public class GatewayConfig
             .route(r -> r
                 .path(PUBLIC + "/**")
 				.filters(f -> f.stripPrefix(1)
-                               .filter(authenticationFilter)
+                               .filter(fileBrowserPublicAuthFilter)
                                .filter(fileBrowserFilter))
                 .uri(fileBrowserService.getFileBrowserUrl()))
             .build();
