@@ -29,6 +29,7 @@ public class FileManagerController {
 
     /**
      * this function should only be use by admin only
+     * 
      * @param userId
      * @return
      */
@@ -56,7 +57,6 @@ public class FileManagerController {
         return item;
     }
 
-
     @PutMapping("/public/{itemId}")
     public FileBrowserItem togglePublic(@PathVariable("itemId") int itemId, @RequestHeader("user_id") int userId) {
         var item = this.fileBrowserService.getFileBrowserItemService().getById(itemId);
@@ -74,10 +74,10 @@ public class FileManagerController {
     }
 
     public void validateOwner(FileBrowserItem item, int userId) {
-        if(ObjectUtils.isEmpty(item))
+        if (ObjectUtils.isEmpty(item))
             HttpResponseThrowers.throwBadRequest("Item does not exist");
 
-        if(!item.getSharedUsers().contains(userId))
+        if (!item.getSharedUsers().contains(userId))
             HttpResponseThrowers.throwForbidden("User not allow to access this item");
     }
 }
