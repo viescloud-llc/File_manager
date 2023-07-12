@@ -33,6 +33,6 @@ public class FileManagerApplication {
 
 	@GetMapping("/_status/healthz")
 	public String healthCheck() {
-		return String.format("Authenticator %s is up and running", env);
+		return String.format("File Manager %s is up and running", env);
 	}
 }
