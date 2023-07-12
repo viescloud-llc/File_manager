@@ -5,8 +5,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -71,6 +73,20 @@ public class FileManagerController {
         validateOwner(item, userId);
         item.setPublic(false);
         return this.fileBrowserService.getFileBrowserItemService().patchFileBrowserItem(itemId, item);
+    }
+
+    @PutMapping()
+    public FileBrowserItem modifyItem(@RequestHeader("user_id") int userId, @RequestBody FileBrowserItem item) {
+        var dbItem = this.fileBrowserService.getFileBrowserItemService().getById(item.getId());
+        validateOwner(dbItem, userId);
+        return this.fileBrowserService.getFileBrowserItemService().modifyFileBrowserItem(dbItem.getId(), item);
+    }
+
+    @PatchMapping()
+    public FileBrowserItem patchItem(@RequestHeader("user_id") int userId, @RequestBody FileBrowserItem item) {
+        var dbItem = this.fileBrowserService.getFileBrowserItemService().getById(item.getId());
+        validateOwner(dbItem, userId);
+        return this.fileBrowserService.getFileBrowserItemService().patchFileBrowserItem(dbItem.getId(), item);
     }
 
     public void validateOwner(FileBrowserItem item, int userId) {
