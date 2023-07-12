@@ -33,7 +33,7 @@ public class FileBrowserFilter implements GatewayFilter {
 
             exchange.getAttributes().put(ServerWebExchangeUtils.GATEWAY_REQUEST_URL_ATTR, request.getURI());
             ServerWebExchange modExchange = populateRequestWithHeadersAndQuery(exchange);
-
+            
             return chain.filter(modExchange);
         } catch (ResponseStatusException ex) {
             throw ex;

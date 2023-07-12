@@ -21,6 +21,8 @@ import com.vincent.inc.File_manager.util.ReflectionUtils;
 import com.vincent.inc.File_manager.util.Time;
 import com.vincent.inc.File_manager.util.Http.HttpResponseThrowers;
 
+import lombok.Getter;
+
 @Service
 public class FileBrowserService {
     public static final String TOKEN_HASH_KEY = "com.vincent.inc.File_manager.service.FileBrowserService";
@@ -44,6 +46,7 @@ public class FileBrowserService {
     private DatabaseUtils<FileBrowserToken, Integer> tokenDatabaseUtils;
 
     @Autowired
+    @Getter
     private FileBrowserItemService fileBrowserItemService;
 
     @Autowired

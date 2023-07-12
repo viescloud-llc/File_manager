@@ -8,14 +8,15 @@ import org.springframework.context.annotation.Configuration;
 
 import com.vincent.inc.File_manager.config.filter.AuthenticationFilter;
 import com.vincent.inc.File_manager.config.filter.FileBrowserFilter;
-import com.vincent.inc.File_manager.config.filter.FileBrowserPostFilter;
+import com.vincent.inc.File_manager.config.filter.FileBrowserPostRewriteFn;
 import com.vincent.inc.File_manager.service.FileBrowserService;
 
 @Configuration
 public class GatewayConfig 
 {
-    public static final String BROWSER = "/browser";
-    public static final String FETCH = "/fetch";
+    public static final String BROWSE = "/browse";
+    public static final String UPLOAD = "/upload";
+    public static final String PUBLIC = "/public";
 
     @Autowired
     private AuthenticationFilter authenticationFilter;
@@ -24,10 +25,10 @@ public class GatewayConfig
     private FileBrowserFilter fileBrowserFilter;
 
     @Autowired
-    private FileBrowserPostFilter fileBrowserPostFilter;
+    private FileBrowserService fileBrowserService;
 
     @Autowired
-    private FileBrowserService fileBrowserService;
+    private FileBrowserPostRewriteFn fileBrowserPostRewriteFn;
 
     @Bean
     public RouteLocator gatewayRouter(RouteLocatorBuilder builder)
@@ -35,14 +36,20 @@ public class GatewayConfig
         return builder.routes()
             //-----------------------------TESTING---------------------------------------
             .route(r -> r
-                .path(BROWSER + "/**")
+                .path(BROWSE + "/**")
+				.filters(f -> f.stripPrefix(1)
+                               .filter(authenticationFilter)
+                               .filter(fileBrowserFilter))
+                .uri(fileBrowserService.getFileBrowserUrl()))
+            .route(r -> r
+                .path(UPLOAD + "/**")
 				.filters(f -> f.stripPrefix(1)
                                .filter(authenticationFilter)
                                .filter(fileBrowserFilter)
-                               .filter(fileBrowserPostFilter))
+                               .modifyResponseBody(String.class, String.class, fileBrowserPostRewriteFn))
                 .uri(fileBrowserService.getFileBrowserUrl()))
             .route(r -> r
-                .path(FETCH + "/**")
+                .path(PUBLIC + "/**")
 				.filters(f -> f.stripPrefix(1)
                                .filter(authenticationFilter)
                                .filter(fileBrowserFilter))
