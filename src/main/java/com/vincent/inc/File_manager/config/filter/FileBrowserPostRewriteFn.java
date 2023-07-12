@@ -30,11 +30,11 @@ public class FileBrowserPostRewriteFn implements RewriteFunction<String, String>
         String requestMethod = request.getMethod().name().toUpperCase();
         var status = response.getStatusCode();
 
-        if ((requestMethod.equals("POST") || requestMethod.equals("PUT")) && status.is2xxSuccessful()) {
+        if(status.is2xxSuccessful()) {
             int userId = AuthenticationFilter.getUserId(request);
             String path = String.format("/%s%s", userId, request.getPath().subPath(2).value());
             var dbItem = this.fileBrowserService.getItem(path);
-            
+
             if(ObjectUtils.isEmpty(dbItem))
                 HttpResponseThrowers.throwServerError("Server file service is having technical difficulty");
 
@@ -42,8 +42,8 @@ public class FileBrowserPostRewriteFn implements RewriteFunction<String, String>
                 dbItem.getSharedUsers().add(userId);
                 dbItem = fileBrowserService.getFileBrowserItemService().patchFileBrowserItem(dbItem.getId(), dbItem);
             }
-
-            if(requestMethod.equals("PUT")) {
+            
+            else if(requestMethod.equals("PUT")) {
                 var fetchItem = this.fileBrowserService.fetchItem(path);
                 fetchItem.getSharedUsers().addAll(dbItem.getSharedUsers());
                 fetchItem.setPublic(dbItem.isPublic());

@@ -1,8 +1,9 @@
 package com.vincent.inc.File_manager.service;
 
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,6 +61,11 @@ public class FileBrowserService {
     public List<FileBrowserItem> getAllItem() {
         return fileBrowserItemService.getAll();
     }
+
+    public List<FileBrowserItem> getAllItem(int userId) {
+        return fileBrowserItemService.getAll().parallelStream().filter((e) -> e.getSharedUsers().contains(userId)).collect(Collectors.toList());
+    }
+
 
     public FileBrowserItem getItem(String path) {
         String paths[] = path.split("/");

@@ -25,7 +25,7 @@ import com.vincent.inc.File_manager.service.FileBrowserItemService;
  * This controller should only be used by admin only
  */
 @RestController
-@RequestMapping("/fileBrowserItems")
+@RequestMapping("/items")
 class FileBrowserItemController {
     @Autowired
     FileBrowserItemService fileBrowserItemService;

@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,8 +22,18 @@ public class FileManagerController {
     @Autowired
     private FileBrowserService fileBrowserService;
 
-    @GetMapping("/all")
-    public List<FileBrowserItem> getAllFile() {
-        return this.fileBrowserService.getAllItem();
+    /**
+     * this function should only be use by admin only
+     * @param userId
+     * @return
+     */
+    @GetMapping("/all/{id}")
+    public List<FileBrowserItem> getAllFile(@PathVariable("id") int userId) {
+        return this.fileBrowserService.getAllItem(userId);
+    }
+
+    @GetMapping("/files")
+    public List<FileBrowserItem> getAllFileByUser(@RequestHeader("user_id") int userId) {
+        return this.fileBrowserService.getAllItem(userId);
     }
 }

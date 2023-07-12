@@ -52,10 +52,10 @@ public class FileBrowserPublicAuthFilter implements GatewayFilter {
             if (ObjectUtils.isEmpty(item))
                 HttpResponseThrowers.throwBadRequest("Item does not exist");
 
-            if(!item.isPublic() && item.getSharedUsers().contains(headerUserId))
+            if(item.isPublic() || item.getSharedUsers().contains(headerUserId))
+                path = String.format("%s%s", FileBrowserService.DOWNLOAD_PATH, path);
+            else
                 HttpResponseThrowers.throwForbidden("Not allow to access this item");
-                    
-            path = String.format("%s%s", FileBrowserService.DOWNLOAD_PATH, path);
         }
         else
             HttpResponseThrowers.throwForbidden("Not Allow");
