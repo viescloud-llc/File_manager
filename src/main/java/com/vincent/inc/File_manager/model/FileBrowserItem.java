@@ -1,6 +1,7 @@
 package com.vincent.inc.File_manager.model;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.Column;
@@ -10,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +20,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class FileBrowserItem implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -54,5 +57,6 @@ public class FileBrowserItem implements Serializable {
     private boolean isPublic;
     
     @Column
-    private List<Integer> sharedUsers;
+    @Builder.Default
+    private List<Integer> sharedUsers = new ArrayList<>();
 }

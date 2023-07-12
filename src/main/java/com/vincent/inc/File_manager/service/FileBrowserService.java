@@ -11,10 +11,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.vincent.inc.File_manager.model.FileBrowserItem;
 import com.vincent.inc.File_manager.model.FileBrowserLoginBody;
 import com.vincent.inc.File_manager.model.FileBrowserToken;
 import com.vincent.inc.File_manager.util.DatabaseUtils;
+import com.vincent.inc.File_manager.util.ReflectionUtils;
 import com.vincent.inc.File_manager.util.Time;
+import com.vincent.inc.File_manager.util.Http.HttpResponseThrowers;
 
 @Service
 public class FileBrowserService {
@@ -39,18 +42,51 @@ public class FileBrowserService {
     private DatabaseUtils<FileBrowserToken, Integer> tokenDatabaseUtils;
 
     @Autowired
+    private FileBrowserItemService fileBrowserItemService;
+
+    @Autowired
     private RestTemplate restTemplate;
 
-    public FileBrowserService(DatabaseUtils<FileBrowserToken, Integer> databaseUtils) {
-        this.tokenDatabaseUtils = databaseUtils.init(null, TOKEN_HASH_KEY);
+    public FileBrowserService(DatabaseUtils<FileBrowserToken, Integer> tokenDatabaseUtils) {
+        this.tokenDatabaseUtils = tokenDatabaseUtils.init(null, TOKEN_HASH_KEY);
         this.tokenDatabaseUtils.setTTL(new Time(0, 0, 0, 0, 5, 0)); // 5 mins
     }
     
-    public List<String> getAllFileName() {
-        return null;
+    public List<FileBrowserItem> getAllItem() {
+        return fileBrowserItemService.getAll();
+    }
+
+    public boolean isItemExist(FileBrowserItem item) {
+        if(ObjectUtils.isEmpty(item.getName()) || ObjectUtils.isEmpty(item.getPath()))
+            return false;
+            
+        var anyMatchItemList = this.fileBrowserItemService.getAllByMatchAny(item, ReflectionUtils.CASE_SENSITIVE);
+        boolean databaseMatch = anyMatchItemList.parallelStream().anyMatch(e -> e.getPath().equals(item.getPath()) && e.getName().equals(item.getName()));
+        
+        if(databaseMatch)
+            return true;
+
+        var fetchItem = this.getItem(item.getPath());
+        if(!ObjectUtils.isEmpty(fetchItem)) {
+            this.fileBrowserItemService.createFileBrowserItem(fetchItem);
+            return true;
+        }
+
+        return false;
     }
 
     // Native API call
+
+    public FileBrowserItem getItem(String path) {
+        String url = String.format("%s%s/%s", this.getFileBrowserUrl(), RESOURCES_PATH, path);
+        UriComponents uri = UriComponentsBuilder.fromHttpUrl(url)
+                                                .queryParam("auth", this.getToken().getXAuth())
+                                                .encode()
+                                                .build();
+        
+        var response = this.restTemplate.getForObject(uri.toUri(), FileBrowserItem.class);
+        return response;
+    }
 
     public FileBrowserToken getToken() {
         FileBrowserToken token = this.tokenDatabaseUtils.get(0);
@@ -80,7 +116,7 @@ public class FileBrowserService {
         if(!ObjectUtils.isEmpty(response)) 
             return new FileBrowserToken(String.format("%s%s", "auth=", response), response);
 
-        return null;
+        return (FileBrowserToken) HttpResponseThrowers.throwServerError("Server file storage is having technical difficulty");
     }
 
     public String getFileBrowserUrl() {

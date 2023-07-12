@@ -10,6 +10,8 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
+
+import com.vincent.inc.File_manager.model.FileBrowserItem;
 import com.vincent.inc.File_manager.service.FileBrowserService;
 import com.vincent.inc.File_manager.util.Http.HttpResponseThrowers;
 
@@ -29,24 +31,9 @@ public class AuthenticationFilter implements GatewayFilter {
         try {
             ServerHttpRequest request = exchange.getRequest();
 
-            String requestMethod = request.getMethod().name().toUpperCase();
-            String path = request.getURI().getPath();
-            int userId = this.getUserId(request);
-
-            if(requestMethod.equals("GET")) {
-                
-                path = String.format("%s/%s%s", FileBrowserService.DOWNLOAD_PATH, userId, path);
-            }
-            else if(requestMethod.equals("POST")) {
-                path = String.format("%s/%s%s", FileBrowserService.UPLOAD_PATH, userId, path);
-
-            }
-            else 
-                HttpResponseThrowers.throwForbidden("Not Allow");
-
-            var newRequest = request.mutate().path(path).build();
+            var newRequest = validateRequest(request);
             return chain.filter(exchange.mutate().request(newRequest).build());
-            
+
         } catch (ResponseStatusException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -55,6 +42,28 @@ public class AuthenticationFilter implements GatewayFilter {
         }
 
         return chain.filter(exchange);
+    }
+
+    private ServerHttpRequest validateRequest(ServerHttpRequest request) {
+        String requestMethod = request.getMethod().name().toUpperCase();
+        String path = request.getURI().getPath();
+        int userId = this.getUserId(request);
+        String pathVariables[] = path.split("/");
+        var xampleItem = FileBrowserItem.builder().path(String.format("/%s%s", userId, path)).name(pathVariables[pathVariables.length - 1]).build();
+
+        if (requestMethod.equals("GET")) {
+
+            if(!this.fileBrowserService.isItemExist(xampleItem))
+                HttpResponseThrowers.throwBadRequest("Item does not exist");
+
+            path = String.format("%s/%s%s", FileBrowserService.DOWNLOAD_PATH, userId, path);
+        } else if (requestMethod.equals("POST")) {
+            path = String.format("%s/%s%s", FileBrowserService.UPLOAD_PATH, userId, path);
+        } else
+            HttpResponseThrowers.throwForbidden("Not Allow");
+
+        var newRequest = request.mutate().path(path).build();
+        return newRequest;
     }
 
     public int getUserId(ServerHttpRequest request) {
@@ -68,6 +77,5 @@ public class AuthenticationFilter implements GatewayFilter {
 
         return userId;
     }
-
 
 }
