@@ -50,7 +50,7 @@ public class DatabaseUtils<V, K> {
                 var oValue = this.jpaRepository.findById(key);
                 if (oValue.isPresent()) {
                     value = oValue.get();
-                    this.saveAndExpire(key, value);
+                    this.save(key, value);
                     return value;
                 }
             }
