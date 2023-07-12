@@ -1,6 +1,8 @@
 package com.vincent.inc.File_manager.service;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,28 +58,38 @@ public class FileBrowserService {
         return fileBrowserItemService.getAll();
     }
 
-    public boolean isItemExist(FileBrowserItem item) {
+    public FileBrowserItem getItem(FileBrowserItem item) {
         if(ObjectUtils.isEmpty(item.getName()) || ObjectUtils.isEmpty(item.getPath()))
-            return false;
+            return null;
             
         var anyMatchItemList = this.fileBrowserItemService.getAllByMatchAny(item, ReflectionUtils.CASE_SENSITIVE);
-        boolean databaseMatch = anyMatchItemList.parallelStream().anyMatch(e -> e.getPath().equals(item.getPath()) && e.getName().equals(item.getName()));
-        
-        if(databaseMatch)
-            return true;
+        AtomicReference<FileBrowserItem> findItem = new AtomicReference<FileBrowserItem>(null);
+        anyMatchItemList.parallelStream().forEach(e -> {
+            if(e.getPath().equals(item.getPath()) && e.getName().equals(item.getName()))
+                findItem.set(e);
+        });
 
-        var fetchItem = this.getItem(item.getPath());
+        var foundItem = findItem.get();
+
+        if(!ObjectUtils.isEmpty(foundItem))
+            return foundItem;
+
+        var fetchItem = this.fetchItem(item.getPath());
         if(!ObjectUtils.isEmpty(fetchItem)) {
             this.fileBrowserItemService.createFileBrowserItem(fetchItem);
-            return true;
+            return fetchItem;
         }
 
-        return false;
+        return null;
+    }
+
+    public boolean isItemExist(FileBrowserItem item) {
+        return !ObjectUtils.isEmpty(this.getItem(item));
     }
 
     // Native API call
 
-    public FileBrowserItem getItem(String path) {
+    public FileBrowserItem fetchItem(String path) {
         String url = String.format("%s%s/%s", this.getFileBrowserUrl(), RESOURCES_PATH, path);
         UriComponents uri = UriComponentsBuilder.fromHttpUrl(url)
                                                 .queryParam("auth", this.getToken().getXAuth())
