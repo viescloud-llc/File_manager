@@ -58,6 +58,13 @@ public class FileBrowserService {
         return fileBrowserItemService.getAll();
     }
 
+    public FileBrowserItem getItem(String path) {
+        String paths[] = path.split("/");
+        String name = paths[paths.length - 1];
+        FileBrowserItem sample = FileBrowserItem.builder().path(path).name(name).build();
+        return this.getItem(sample);
+    }
+
     public FileBrowserItem getItem(FileBrowserItem item) {
         if(ObjectUtils.isEmpty(item.getName()) || ObjectUtils.isEmpty(item.getPath()))
             return null;
@@ -85,6 +92,10 @@ public class FileBrowserService {
 
     public boolean isItemExist(FileBrowserItem item) {
         return !ObjectUtils.isEmpty(this.getItem(item));
+    }
+
+    public boolean isItemExist(String path) {
+        return !ObjectUtils.isEmpty(this.getItem(path));
     }
 
     // Native API call

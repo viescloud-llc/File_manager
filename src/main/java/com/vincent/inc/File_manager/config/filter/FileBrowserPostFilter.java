@@ -9,8 +9,10 @@ import org.springframework.core.Ordered;
 import org.springframework.core.ResolvableType;
 import org.springframework.core.codec.Hints;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 
@@ -46,10 +48,7 @@ public class FileBrowserPostFilter implements GatewayFilter, Ordered {
             
             if(requestMethod.equals("POST") && status.is2xxSuccessful()) {
                 String path = request.getPath().subPath(4).value();
-                String paths[] = path.split("/");
-                String itemName = paths[paths.length - 1];
-                FileBrowserItem example = FileBrowserItem.builder().path(path).name(itemName).build();
-                var newItem = this.fileBrowserService.getItem(example);
+                var newItem = this.fileBrowserService.getItem(path);
                 var newItemJson = this.gson.toJson(newItem);
                 response.setRawStatusCode(201);
                 DataBuffer dataBuffer = response.bufferFactory().wrap(newItemJson.getBytes(StandardCharsets.UTF_8));
