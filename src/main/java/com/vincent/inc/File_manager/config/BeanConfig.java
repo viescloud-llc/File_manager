@@ -56,21 +56,6 @@ public class BeanConfig {
         };
     }
 
-    // @Bean
-    // public WebMvcConfigurer CORSConfigurer() {
-    // return new WebMvcConfigurer() {
-    // @Override
-    // public void
-    // addCorsMappings(org.springframework.web.servlet.config.annotation.CorsRegistry
-    // registry) {
-    // registry.addMapping("/**")
-    // .allowedOrigins("*")
-    // .allowedHeaders("*")
-    // .allowedMethods("*");
-    // }
-    // };
-    // }
-
     @Bean
     public HttpMessageConverters messageConverter(ObjectProvider<HttpMessageConverter<?>> converter) {
         return new HttpMessageConverters(converter.orderedStream().collect(Collectors.toList()));

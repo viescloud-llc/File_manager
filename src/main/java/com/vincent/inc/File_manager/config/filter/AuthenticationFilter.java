@@ -47,7 +47,7 @@ public class AuthenticationFilter implements GatewayFilter {
     private ServerHttpRequest validateRequest(ServerHttpRequest request) {
         String requestMethod = request.getMethod().name().toUpperCase();
         String path = request.getURI().getPath();
-        int userId = this.getUserId(request);
+        int userId = getUserId(request);
         String pathVariables[] = path.split("/");
         var xampleItem = FileBrowserItem.builder().path(String.format("/%s%s", userId, path)).name(pathVariables[pathVariables.length - 1]).build();
 
@@ -66,7 +66,7 @@ public class AuthenticationFilter implements GatewayFilter {
         return newRequest;
     }
 
-    public int getUserId(ServerHttpRequest request) {
+    public static int getUserId(ServerHttpRequest request) {
         List<String> headers = request.getHeaders().getOrEmpty("user_id");
 
         if (headers.isEmpty())

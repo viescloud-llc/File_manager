@@ -11,7 +11,7 @@ import com.vincent.inc.File_manager.model.FileBrowserItem;
 import com.vincent.inc.File_manager.service.FileBrowserService;
 
 @RestController
-@RequestMapping("file_manager")
+@RequestMapping("manager")
 public class FileManagerController {
     public static final String LOGIN_PATH = "/api/login";
     public static final String RESOURCES_PATH = "/api/resources";
