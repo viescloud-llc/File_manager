@@ -13,8 +13,7 @@ import com.vincent.inc.File_manager.config.filter.FileBrowserPublicAuthFilter;
 import com.vincent.inc.File_manager.service.FileBrowserService;
 
 @Configuration
-public class GatewayConfig 
-{
+public class GatewayConfig {
     public static final String BROWSE = "/browse";
     public static final String UPLOAD = "/upload";
     public static final String PUBLIC = "/public";
@@ -35,29 +34,28 @@ public class GatewayConfig
     private FileBrowserPostRewriteFn fileBrowserPostRewriteFn;
 
     @Bean
-    public RouteLocator gatewayRouter(RouteLocatorBuilder builder)
-    {
+    public RouteLocator gatewayRouter(RouteLocatorBuilder builder) {
         return builder.routes()
-            //-----------------------------TESTING---------------------------------------
-            .route(r -> r
-                .path(BROWSE + "/**")
-				.filters(f -> f.stripPrefix(1)
-                               .filter(authenticationFilter)
-                               .filter(fileBrowserFilter))
-                .uri(fileBrowserService.getFileBrowserUrl()))
-            .route(r -> r
-                .path(UPLOAD + "/**")
-				.filters(f -> f.stripPrefix(1)
-                               .filter(authenticationFilter)
-                               .filter(fileBrowserFilter)
-                               .modifyResponseBody(String.class, String.class, fileBrowserPostRewriteFn))
-                .uri(fileBrowserService.getFileBrowserUrl()))
-            .route(r -> r
-                .path(PUBLIC + "/**")
-				.filters(f -> f.stripPrefix(1)
-                               .filter(fileBrowserPublicAuthFilter)
-                               .filter(fileBrowserFilter))
-                .uri(fileBrowserService.getFileBrowserUrl()))
-            .build();
+                // -----------------------------TESTING---------------------------------------
+                .route(r -> r
+                        .path(BROWSE + "/**")
+                        .filters(f -> f.stripPrefix(1)
+                                .filter(authenticationFilter)
+                                .filter(fileBrowserFilter))
+                        .uri(fileBrowserService.getFileBrowserUrl()))
+                .route(r -> r
+                        .path(UPLOAD + "/**")
+                        .filters(f -> f.stripPrefix(1)
+                                .filter(authenticationFilter)
+                                .filter(fileBrowserFilter)
+                                .modifyResponseBody(String.class, String.class, fileBrowserPostRewriteFn))
+                        .uri(fileBrowserService.getFileBrowserUrl()))
+                .route(r -> r
+                        .path(PUBLIC + "/**")
+                        .filters(f -> f.stripPrefix(1)
+                                .filter(fileBrowserPublicAuthFilter)
+                                .filter(fileBrowserFilter))
+                        .uri(fileBrowserService.getFileBrowserUrl()))
+                .build();
     }
 }
